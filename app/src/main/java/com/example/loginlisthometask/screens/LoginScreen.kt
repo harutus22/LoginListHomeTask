@@ -13,26 +13,21 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.loginlisthometask.R
 import com.example.loginlisthometask.composables.OutlinedLoginTextField
-import com.example.loginlisthometask.viewmodels.LoginViewModel
-import com.example.loginlisthometask.viewmodels.event.LoginClicked
-import com.example.loginlisthometask.viewmodels.event.PasswordChanged
-import com.example.loginlisthometask.viewmodels.event.UsernameChanged
+import com.example.loginlisthometask.viewmodels.event.*
+import com.example.loginlisthometask.viewmodels.states.LoginUiState
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel,
+    uiState: LoginUiState,
+    onEvent: (event: LoginEvent) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -50,7 +45,7 @@ fun LoginScreen(
             R.string.username,
             false,
         ) {
-            viewModel.onEvent(UsernameChanged(it))
+            onEvent(UsernameChanged(it))
         }
         Spacer(Modifier.height(24.dp))
         OutlinedLoginTextField(
@@ -58,7 +53,7 @@ fun LoginScreen(
             R.string.password,
             true,
         ) {
-            viewModel.onEvent(PasswordChanged(it))
+            onEvent(PasswordChanged(it))
         }
 
         uiState.error?.let { error ->
@@ -70,7 +65,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
-                viewModel.onEvent(LoginClicked)
+                onEvent(LoginClicked)
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading

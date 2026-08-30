@@ -22,22 +22,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.loginlisthometask.R
-import com.example.loginlisthometask.viewmodels.event.LoadVehicles
-import com.example.loginlisthometask.viewmodels.event.Logout
+import com.example.loginlisthometask.viewmodels.event.*
 import com.example.loginlisthometask.composables.VehicleItem
-import com.example.loginlisthometask.viewmodels.MainScreenViewModel
+import com.example.loginlisthometask.viewmodels.states.VehicleState
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainScreenViewModel,
+    uiState: VehicleState,
     userName: String,
+    onEvent: (event: MainScreenEvent) -> Unit
 ) {
-    val uiState = viewModel.vehicleState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
-        viewModel.onEvent(LoadVehicles)
+        onEvent(LoadVehicles)
     }
     Column(modifier.fillMaxSize()) {
         Column(
@@ -52,7 +50,7 @@ fun MainScreen(
             ) {
                 Text(stringResource(R.string.user, userName))
                 IconButton(onClick = {
-                    viewModel.onEvent(Logout)
+                    onEvent(Logout)
                 }
                 ) {
                     Icon(
@@ -68,15 +66,15 @@ fun MainScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (uiState.value.isLoading) {
+            if (uiState.isLoading) {
                 item() {
                     CircularProgressIndicator(
                         modifier = Modifier.size(80.dp)
                     )
                 }
-            } else if (uiState.value.list.isNotEmpty()) {
+            } else if (uiState.list.isNotEmpty()) {
                 items(
-                    uiState.value.list,
+                    uiState.list,
                     key = { vehicle -> vehicle.vin }
                 ) { vehicle ->
                     VehicleItem(vehicle)

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,14 +19,9 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.example.loginlisthometask.MyApplication
 import com.example.loginlisthometask.database.UserPreferences
-import com.example.loginlisthometask.screens.LoginScreen
-import com.example.loginlisthometask.screens.MainScreen
 import com.example.loginlisthometask.viewmodels.LoginViewModel
 import com.example.loginlisthometask.viewmodels.MainScreenViewModel
-import com.example.loginlisthometask.viewmodels.effects.LoggedIn
-import com.example.loginlisthometask.viewmodels.effects.LogoutEffect
-import com.example.loginlisthometask.viewmodels.factories.LoginViewModelFactory
-import com.example.loginlisthometask.viewmodels.factories.MainScreenViewModelFactory
+import com.example.loginlisthometask.viewmodels.factories.*
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -100,40 +94,19 @@ fun NavigationRoute(
                 val viewModel: LoginViewModel = viewModel(
                     factory = LoginViewModelFactory(userPreferences)
                 )
-                LaunchedEffect(viewModel) {
-                    viewModel.effects.collect { effect ->
-                        when (effect) {
-                            is LoggedIn -> {
-                                backstack.add(
-                                    Route.VehiclesListRoute(
-                                        effect.username
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-                LoginScreen(viewModel = viewModel)
+                LoginRoot(
+                    viewModel = viewModel,
+                    backstack = backstack
+                )
             }
             entry<Route.VehiclesListRoute> {
                 val viewModel: MainScreenViewModel = viewModel(
                     factory = MainScreenViewModelFactory(userPreferences)
                 )
-                LaunchedEffect(viewModel) {
-                    viewModel.effects.collect { effect ->
-                        when (effect) {
-                            LogoutEffect -> {
-                                if (backstack.size == 1)
-                                    backstack[0] = Route.LoginRoute
-                                else
-                                    backstack.removeLastOrNull()
-                            }
-                        }
-                    }
-                }
-                MainScreen(
+                MainRoot(
                     viewModel = viewModel,
-                    userName = it.userName,
+                    backstack = backstack,
+                    username = it.userName,
                 )
             }
         }
